@@ -1,0 +1,11 @@
+# IDE files
+.idea
+*.iml
+
+# Build artifacts
+gen
+bin
+out
+
+# Local settings
+local.properties
