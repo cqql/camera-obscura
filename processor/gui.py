@@ -4,11 +4,12 @@ from tkinter import Tk, Frame, Label, Button
 from threading import Thread
 from PIL import Image
 from PIL.ImageTk import PhotoImage
+from queue import Queue, Empty
 
-import queue
 import io
 
-from server import app, images
+from server import ImageServer
+
 
 class ImageWidget(Label):
     def __init__(self, master, **kwargs):
@@ -40,9 +41,12 @@ class ImageWidget(Label):
         size = (self.winfo_width(), self.winfo_height())
         self.resized = self.original.resize(size)
 
+
 class GUI(Frame):
-    def __init__(self, master):
+    def __init__(self, master, images):
         super().__init__(master)
+
+        self.images = images
 
         dimensions = {"relwidth": 0.5, "relheight": 0.5}
 
@@ -62,23 +66,35 @@ class GUI(Frame):
 
     def load_image(self):
         try:
-            data = images.get_nowait()
+            data = self.images.get_nowait()
             image = Image.open(io.BytesIO(data))
 
             self.original_holder.set_image(image)
-        except queue.Empty:
+        except Empty:
             pass
 
         self.after(1000, self.load_image)
 
-if __name__ == "__main__":
-    server = Thread(target=lambda: app.run(host="0.0.0.0"))
-    server.start()
+
+def main():
+    images = Queue()
+
+    server = ImageServer(images.put_nowait)
+    Thread(target=lambda: server.serve_forever()).start()
 
     root = Tk()
-    root.protocol("WM_DELETE_WINDOW", root.destroy)
 
-    gui = GUI(root)
+    def cleanup():
+        root.destroy()
+        server.shutdown()
+
+    root.protocol("WM_DELETE_WINDOW")
+
+    gui = GUI(root, images)
     gui.pack(fill="both", expand=True)
 
     root.mainloop()
+
+
+if __name__ == "__main__":
+    main()
