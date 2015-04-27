@@ -56,6 +56,10 @@ public class RecordingActivity extends Activity {
 
         Camera.Parameters params = camera.getParameters();
         params.setPictureFormat(ImageFormat.JPEG);
+
+        // Maximum exposure time
+        params.setExposureCompensation(params.getMaxExposureCompensation());
+
         camera.setParameters(params);
 
         SurfaceHolder holder = ((SurfaceView) findViewById(R.id.preview)).getHolder();
