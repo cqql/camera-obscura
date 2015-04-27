@@ -1,8 +1,11 @@
 package de.cqql.camera_obscura.android;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -23,7 +26,16 @@ public class UploadTask extends AsyncTask<Void, Void, Boolean> {
 
     @Override
     protected Boolean doInBackground(Void... params) {
-        Log.d(getClass().getName(), "Sending " + data.length + " bytes of " + type + " to " + URL);
+        Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+        int width = 1024;
+        int height = (int)((float)bitmap.getHeight() / (float)bitmap.getWidth() * width);
+        Bitmap scaled = Bitmap.createScaledBitmap(bitmap, width, height, false);
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        scaled.compress(Bitmap.CompressFormat.JPEG, 90, stream);
+
+        byte[] bytes = stream.toByteArray();
+
+        Log.d(getClass().getName(), "Sending " + bytes.length + " bytes of " + type + " to " + URL);
 
         try {
             java.net.URL url = new URL(URL);
@@ -31,8 +43,8 @@ public class UploadTask extends AsyncTask<Void, Void, Boolean> {
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestProperty("Content-Type", type);
             connection.setDoOutput(true);
-            connection.setFixedLengthStreamingMode(data.length);
-            connection.getOutputStream().write(data);
+            connection.setFixedLengthStreamingMode(bytes.length);
+            connection.getOutputStream().write(stream.toByteArray());
             connection.disconnect();
         } catch (MalformedURLException e) {
             Log.d(getClass().getName(), "Invalid URL: " + URL);
