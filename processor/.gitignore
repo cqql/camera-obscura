@@ -1,5 +1,8 @@
 # Python cache
 __pycache__
 
+# Virtualenv
+env
+
 # Saved images
 images
