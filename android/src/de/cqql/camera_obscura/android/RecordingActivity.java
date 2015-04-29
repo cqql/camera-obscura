@@ -2,16 +2,23 @@ package de.cqql.camera_obscura.android;
 
 import android.app.Activity;
 import android.graphics.ImageFormat;
+import android.graphics.Rect;
+import android.graphics.YuvImage;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.WindowManager;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.locks.Lock;
 
 public class RecordingActivity extends Activity {
     private Camera camera;
+
+    private Semaphore uploadLock = new Semaphore(1);
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -73,7 +80,7 @@ public class RecordingActivity extends Activity {
                     e.printStackTrace();
                 }
 
-                takePicture();
+                startRecording();
             }
 
             @Override
@@ -88,16 +95,43 @@ public class RecordingActivity extends Activity {
         });
     }
 
+    public void uploadDone() {
+        uploadLock.release();
+    }
+
+    private void startRecording() {
+        // This is a hack to receive a continuous stream of images.
+        camera.setPreviewCallback(new Camera.PreviewCallback() {
+            @Override
+            public void onPreviewFrame(byte[] data, Camera camera) {
+                // Only upload one image at once
+                if (!uploadLock.tryAcquire()) {
+                    return;
+                }
+
+                Camera.Parameters params = camera.getParameters();
+                Camera.Size size = params.getPreviewSize();
+                YuvImage yuv = new YuvImage(data, params.getPreviewFormat(), size.width, size.height, null);
+
+                ByteArrayOutputStream jpegStream = new ByteArrayOutputStream();
+                Rect rect = new Rect(0, 0, size.width, size.height);
+                yuv.compressToJpeg(rect, 100, jpegStream);
+
+                transferPicture(jpegStream.toByteArray(), "image/jpeg");
+            }
+        });
+
+        camera.startPreview();
+    }
+
     public void takePicture() {
         if (camera != null) {
-            camera.startPreview();
-
-            camera.takePicture(null, null, new Camera.PictureCallback() {
-                @Override
-                public void onPictureTaken(byte[] data, Camera camera) {
-                    transferPicture(data, "image/jpeg");
-                }
-            });
+//            camera.takePicture(null, null, new Camera.PictureCallback() {
+//                @Override
+//                public void onPictureTaken(byte[] data, Camera camera) {
+//                    transferPicture(data, "image/jpeg");
+//                }
+//            });
         }
     }
 
