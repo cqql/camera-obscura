@@ -4,8 +4,8 @@ from tkinter import Tk, Frame, Label, Button
 from threading import Thread
 from PIL import Image
 from PIL.ImageTk import PhotoImage
-from queue import Queue, Empty
 
+import queue
 import io
 
 from server import ImageServer
@@ -70,16 +70,24 @@ class GUI(Frame):
             image = Image.open(io.BytesIO(data))
 
             self.original_holder.set_image(image)
-        except Empty:
+        except queue.Empty:
             pass
 
         self.after(1000, self.load_image)
 
 
 def main():
-    images = Queue()
+    images = queue.Queue(maxsize=1)
 
-    server = ImageServer(images.put_nowait)
+    def queue_image(image):
+        print("Received image")
+
+        try:
+            images.put_nowait(image)
+        except queue.Full:
+            print("Dropped image, because queue is full")
+
+    server = ImageServer(queue_image)
     Thread(target=lambda: server.serve_forever()).start()
 
     root = Tk()
