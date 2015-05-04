@@ -61,7 +61,8 @@ public class UploadTask extends AsyncTask<Void, Void, Boolean> {
     @Override
     protected void onPostExecute(Boolean succeeded) {
         if (succeeded) {
-            activity.uploadDone();
+            //activity.uploadDone();
+            activity.takePicture();
         }
     }
 }

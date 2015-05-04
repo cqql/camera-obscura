@@ -80,7 +80,8 @@ public class RecordingActivity extends Activity {
                     e.printStackTrace();
                 }
 
-                startRecording();
+//                startRecording();
+                takePicture();
             }
 
             @Override
@@ -126,12 +127,14 @@ public class RecordingActivity extends Activity {
 
     public void takePicture() {
         if (camera != null) {
-//            camera.takePicture(null, null, new Camera.PictureCallback() {
-//                @Override
-//                public void onPictureTaken(byte[] data, Camera camera) {
-//                    transferPicture(data, "image/jpeg");
-//                }
-//            });
+            camera.startPreview();
+
+            camera.takePicture(null, null, new Camera.PictureCallback() {
+                @Override
+                public void onPictureTaken(byte[] data, Camera camera) {
+                    transferPicture(data, "image/jpeg");
+                }
+            });
         }
     }
 
