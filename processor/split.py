@@ -6,9 +6,6 @@ import cv2
 
 
 def split(image):
-    # Read image as 3 color image
-    image = cv2.imread(path, 1)
-
     green = image[:,:, 1]
     red = image[:,:, 2]
 

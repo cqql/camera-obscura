@@ -7,8 +7,11 @@ from PIL.ImageTk import PhotoImage
 
 import queue
 import io
+import cv2
+import numpy as np
 
 from server import ImageServer
+from split import split
 
 
 class ImageWidget(Label):
@@ -21,7 +24,9 @@ class ImageWidget(Label):
 
         self.bind("<Configure>", self.on_resize)
 
-    def set_image(self, image):
+    def set_image(self, data):
+        image = Image.open(io.BytesIO(data))
+
         self.original = image
         self.resize_image()
         self.draw_image()
@@ -43,10 +48,8 @@ class ImageWidget(Label):
 
 
 class GUI(Frame):
-    def __init__(self, master, images):
+    def __init__(self, master):
         super().__init__(master)
-
-        self.images = images
 
         dimensions = {"relwidth": 0.5, "relheight": 0.5}
 
@@ -62,18 +65,16 @@ class GUI(Frame):
         self.rotated_holder = ImageWidget(self, bg="teal")
         self.rotated_holder.place(relx=1, rely=1, anchor="se", **dimensions)
 
-        self.after_idle(self.load_image)
+    def set_image(self, data_bytes):
+        data = np.frombuffer(data_bytes, dtype="uint8")
+        cv2im = cv2.imdecode(data, 1)
+        (cv2green, cv2red) = split(cv2im)
+        _, green = cv2.imencode(".jpeg", cv2green)
+        _, red = cv2.imencode(".jpeg", cv2red)
 
-    def load_image(self):
-        try:
-            data = self.images.get_nowait()
-            image = Image.open(io.BytesIO(data))
-
-            self.original_holder.set_image(image)
-        except queue.Empty:
-            pass
-
-        self.after(1000, self.load_image)
+        self.original_holder.set_image(data)
+        self.green_holder.set_image(green)
+        self.red_holder.set_image(red)
 
 
 def main():
@@ -98,8 +99,20 @@ def main():
 
     root.protocol("WM_DELETE_WINDOW")
 
-    gui = GUI(root, images)
+    gui = GUI(root)
     gui.pack(fill="both", expand=True)
+
+    def pop_image():
+        try:
+            data = images.get_nowait()
+
+            gui.set_image(data)
+        except queue.Empty:
+            pass
+
+        gui.after(1000, pop_image)
+
+    gui.after_idle(pop_image)
 
     root.mainloop()
 
