@@ -1,0 +1,84 @@
+#+STARTUP: noindent
+#+STARTUP: showall
+#+TITLE: Camera Obscura
+* Aufbau
+  Die Kamera selbst ist grundsaetzlich so aufgebaut, wie in der Aufgabenstellung
+  vorgeschlagen. Auf der Vorderseite gibt es zwei Loecher im Abstand von ca. 1
+  cm, vor die die Farbfilter geklebt sind. Die Ecken sind mit Alufolie
+  abgeklebt, um Lichteinfall zu verhindern, falls der Deckel nicht ganz dicht
+  schliesst.
+
+  #+CAPTION: Lochkamera von aussen
+  #+ATTR_HTML: :width 50%
+  [[file:report/setup-outside.jpg]]
+
+  Die Rueckseite des Kartons ist mit weissem Papier beklebt, um als Leinwand zu
+  dienen. Man sieht jetzt, dass ich die Aufgabenstellung etwas abgewandelt
+  habe. Statt eines weiteren Lochs ist eine Handyhuelle in die Kamera
+  geklebt. Diese kann ein Handy so halten, dass die Kamera auf die Leinwand
+  gerichtet ist. Gleichzeitig laeuft darauf eine App[fn:app], die kontinuierlich
+  Bilder aufnimmt und an eine GUI[fn:gui] sendet. Das sollte das ganze einfach
+  etwas interaktiver machen, wenn man immer sehen kann, was gerade in der
+  Lochkamera passiert, auch waehrend man zum Beispiel gerade mit ihr geht.
+
+  #+CAPTION: Lochkamera von innen
+  #+ATTR_HTML: :width 50%
+  [[file:report/setup-inside.jpg]]
+
+  Die GUI zeigt oben links das zuletzt empfange Bild, oben rechts den Rot- und
+  unten links den Gruenkanal. Unten rechts sieht man dann die Disparity-Map.
+
+  #+CAPTION: Screenshot der GUI
+  #+ATTR_HTML: :width 50%
+  [[file:report/screenshot.png]]
+
+* Aufnahmen
+
+  Es hat sich dann gezeigt, dass die Handykamera nicht lichtempfindlich genug
+  war, um gute Aufnahmen zu machen. Dazu laesst sich bei Android die
+  Belichtungszeit nur indirekt beeinflussen, sodass dort ein Maximum von
+  ungefaehr einer Sekunde erreicht wurde. Einiges weniger als die 15 Sekunden,
+  die in der Aufgabenstellung genutzt wurden. Bei starkem Sonnenlicht sind
+  dennoch ein paar Aufnahmen entstanden, nachdem die Loecher auf ~4-5 Millimeter
+  Durchmesser vergroessert worden sind. Leider sind sie dementsprechend
+  unscharf.
+
+  #+CAPTION: Aufnahme von einem Gartenstuhl (noch mit groesserem Lochabstand)
+  #+ATTR_HTML: :width 50%
+  [[file:report/chair.jpg]]
+
+  #+CAPTION: Aufnahme von einem Fahrrad
+  #+ATTR_HTML: :width 50%
+  [[file:report/bike.jpg]]
+
+  #+CAPTION: Gruenkanal der Fahrradaufnahme (linkes Loch)
+  #+ATTR_HTML: :width 50%
+  [[file:report/bike_green.jpg]]
+
+  #+CAPTION: Rotkanal der Fahrradaufnahme (rechtes Loch)
+  #+ATTR_HTML: :width 50%
+  [[file:report/bike_red.jpg]]
+
+* Depth-Map
+
+  Das hat leider nicht wirklich funktioniert. Die meisten Parameter haben dazu
+  gefuehrt, dass die Disparity-Map komplett einfarbig war. Bei dem folgenden
+  Bild gibt es zumindest unterschiedliche Werte.
+
+  #+CAPTION: Disparity-Map der Fahradaufnahme
+  #+ATTR_HTML: :width 50%
+  [[file:report/bike_stereo.jpg]]
+
+  Es koennte daran liegen, dass die Gegenstaende im Bild auf der Z-Achse nicht
+  weit genug verteilt sind, sodass die Disparity bei allen Pixeln
+  ununterscheidbar gross ist. Die eine anderswertige Punktgruppe im Bild scheint
+  sich an einer Lichtreflektion im Vorderreifen des Fahrrads zu befinden, die
+  auch die hellste Stelle im Bild ist. Das laesst mich vermuten, dass durch die
+  kurze Belichtungszeit vielleicht die Intensitaet des Bildes zu gering ist, um
+  darauf etwas zu berechnen.
+
+* Footnotes
+
+[fn:app] [[file:android][Android-App fuer die Foto-Autnahme]]
+
+[fn:gui] [[file:processor/gui.py][GUI, die die Bilder empfaengt]]
