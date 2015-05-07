@@ -9,23 +9,13 @@ from matplotlib import pyplot as plt
 
 
 def stereo(left, right):
-    bm = cv2.StereoSGBM_create(blockSize=5,
-                               numDisparities=16,
-                               preFilterCap=4,
-                               minDisparity=-64,
-                               uniquenessRatio=1,
-                               speckleWindowSize=150,
-                               speckleRange=2,
-                               disp12MaxDiff=10,
-                               P1=200,
-                               P2=800)
+    bm = cv2.StereoBM_create(numDisparities=16, blockSize=15)
+    bm.setUniquenessRatio(1)
 
     disp = bm.compute(left, right)
 
-    x = cv2.normalize(disp, np.array([]), 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
-    import ipdb
-    ipdb.set_trace()
-    return x
+    return cv2.normalize(disp, np.array([]), 0, 255, cv2.NORM_MINMAX,
+                         cv2.CV_8U)
 
 
 def main(left_path, right_path):
