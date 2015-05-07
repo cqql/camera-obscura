@@ -10,7 +10,7 @@ import io
 import cv2
 import numpy as np
 
-from server import ImageServer
+from server import ImageServer, save_to_file
 from split import split
 
 
@@ -82,6 +82,8 @@ def main():
 
     def queue_image(image):
         print("Received image")
+
+        save_to_file(image)
 
         try:
             images.put_nowait(image)
