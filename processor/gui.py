@@ -9,9 +9,11 @@ import queue
 import io
 import cv2
 import numpy as np
+import sys
 
 from server import ImageServer, save_to_file
 from split import split
+from stereo import stereo
 
 
 class ImageWidget(Label):
@@ -62,8 +64,8 @@ class GUI(Frame):
         self.green_holder = ImageWidget(self, bg="green")
         self.green_holder.place(relx=0, rely=1, anchor="sw", **dimensions)
 
-        self.rotated_holder = ImageWidget(self, bg="teal")
-        self.rotated_holder.place(relx=1, rely=1, anchor="se", **dimensions)
+        self.stereo_holder = ImageWidget(self, bg="teal")
+        self.stereo_holder.place(relx=1, rely=1, anchor="se", **dimensions)
 
     def set_image(self, data_bytes):
         data = np.frombuffer(data_bytes, dtype="uint8")
@@ -71,10 +73,12 @@ class GUI(Frame):
         (cv2green, cv2red) = split(cv2im)
         _, green = cv2.imencode(".jpeg", cv2green)
         _, red = cv2.imencode(".jpeg", cv2red)
+        _, st_img = cv2.imencode(".jpeg", stereo(cv2green, cv2red))
 
         self.original_holder.set_image(data)
         self.green_holder.set_image(green)
         self.red_holder.set_image(red)
+        self.stereo_holder.set_image(st_img)
 
 
 def main():
@@ -89,6 +93,10 @@ def main():
             images.put_nowait(image)
         except queue.Full:
             print("Dropped image, because queue is full")
+
+    if len(sys.argv) > 1:
+        with open(sys.argv[1], "rb") as file:
+            queue_image(file.read())
 
     server = ImageServer(queue_image)
     Thread(target=lambda: server.serve_forever()).start()
